@@ -1,7 +1,25 @@
-let queryTests = require('../src/node_and_sql');
+let queryTests = require('../src/index');
 
-define('test', () => {
-	it('should test for', () => {
-		expect()
-	})
-})
+it('should add something to database', () => {
+    expect(queryTests.addNewVisitor).toBeUndefined();
+});
+
+it('should list all visitors', () => {
+    expect(queryTests.listAllVisitors).toBeUndefined();
+});
+
+it('should delete a visitor', () => {
+    expect(queryTests.deleteAvisitor).toBeUndefined();
+});
+
+it('should update a visitor', () => {
+    expect(queryTests.updateAvisitor).toBeUndefined();
+});
+
+it('should return data for a visitor', () => {
+    expect(queryTests.viewOnevisitor).toBeUndefined();
+});
+
+it('should delete all visitors', () => {
+    expect(queryTests.deleteAllVisitors).toBeUndefined();
+});
