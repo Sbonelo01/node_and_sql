@@ -1,35 +1,73 @@
 "use strict"
 
+require('dotenv').config();
+require('../.env');
+
 const {
     Client
 } = require('pg');
+
+    let user = process.env.PGUSER;
+    let password = process.env.PGPASSWORD;
+    let host = process.env.PGHOST;
+    let port = process.env.PGPORT;
+    let database = process.env.PGDATABASE; 
+
 const client = new Client({
-    user: "user",
-    password: "pass",
-    host: "localhost",
-    port: 5432,
-    database: "visitor"
-})
+   user,
+   password,
+   host,
+   port,
+   database
+});
 
-//NEED TO CREATE DATABASE FIRST
+ client.connect()
 
-async function addNewVisitor() {
+async function createTable() {
     try {
         await client.connect()
-        console.log('connected...')
-        const addNew = client.query('CREATE USER');
-        console.table(addNew.rows)
+        const table = await client.query(
+            `CREATE TABLE IF NOT EXISTS 
+            visistors(
+                customerID SERIAL primary key,
+                visitorName varchar(50),
+                visitorAge integer,
+                dateOfVisit varchar(50),
+                timeOfVisit varchar(50),
+                assistantName varchar(50),
+                comments varchar(50);
+                `
+        );
+        //console.table(table.rows)
+        return table.rows;
+    } catch (err) {
+        console.table(err)
+    } finally {
+        await client.end()
+    }
+}
+
+async function addNewVisitor(visitorName, visitorAge, dateOfVisit, timeOfVisit, assistantName, comments) {
+    try {
+        await client.connect()
+        const addNew = await client.query(
+            'INSERT INTO visitors(visitorName, visitorAge, dateOfVisit, timeOfVisit, assistantName, comments) VALUES($1, $2, $3, $3, $4, $5, $6)', [visitorName, visitorAge, dateOfVisit, timeOfVisit, assistantName, comments]
+        );
+        //console.table(addNew.rows)
+        return addNew.rows;
     } catch (err) {
         console.log(err);
     } finally {
-        await client.end
+        await client.end();
     }
 }
 
 async function listAllVisitors() {
     try {
-        const listAll = client.query('SELECT * FROM visitor');
-        console.table(listAll.rows);
+        await client.connect()
+        const listAll = client.query('SELECT * FROM visitors');
+        //console.table(listAll.rows);
+        return listAll.rows
     } catch (err) {
         console.log(err);
     } finally {
@@ -37,10 +75,12 @@ async function listAllVisitors() {
     }
 }
 
-async function deleteAvisitor() {
+async function deleteAvisitor(id) {
     try {
-        const del = client.query('DELETE ....');
-        console.table(del.rows);
+        await client.connect()
+        const del = client.query('DELETE FROM visitors WHERE visitorId = ${id}');
+        //console.table(del.rows);
+        return del.rows
     } catch (err) {
         console.log(err);
     } finally {
@@ -48,10 +88,12 @@ async function deleteAvisitor() {
     }
 }
 
-async function updateAvisitor() {
+async function updateAvisitor(id) {
     try {
-        const update = client.query('UPDATE * FROM visitor');
-        console.table(update.rows);
+        await client.connect()
+        const update = client.query('UPDATE FROM visitors WHERE visitorId = ${id}');
+        //console.table(update.rows);
+        return update.rows;
     } catch (err) {
         console.log(err)
     } finally {
@@ -61,10 +103,10 @@ async function updateAvisitor() {
 
 async function viewOnevisitor(id) {
     try {
-        if (id) {
-            const viewOne = client.query('SELECT USER WHERE VISITOR_ID = $visitorID');
-            console.table(viewOne.rows)
-        }
+        await client.connect()
+        const view = client.query('SELECT * FROM visitors visitorID = ${id}')
+            //console.table(view.rows)
+        return view.rows;
     } catch (err) {
         console.log(err)
     } finally {
@@ -74,14 +116,27 @@ async function viewOnevisitor(id) {
 
 async function deleteAllVisitors() {
     try {
+        await client.connect()
         const del = client.query('DELETE * FROM visitors')
-        console.table(del.row)
+            //console.table(del.rows)
+        return del.rows;
     } catch (err) {
         console.log(err);
     } finally {
         await client.end();
     }
 }
+
+module.exports = {
+    createTable,
+    addNewVisitor,
+    listAllVisitors,
+    deleteAvisitor,
+    updateAvisitor,
+    viewOnevisitor,
+    deleteAllVisitors
+}
+
 
 //add new visitor should save the visitor into the database
 //list all visitor. This should return an array of all the visitor names and ids

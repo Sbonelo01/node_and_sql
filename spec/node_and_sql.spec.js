@@ -1,25 +1,29 @@
 let queryTests = require('../src/index');
 
+it('should create a database called visitor', () => {
+  expect(queryTests.createTable).toBeDefined();
+})
+
 it('should add something to database', () => {
-    expect(queryTests.addNewVisitor).toBeUndefined();
+  expect(queryTests.addNewVisitor).toBeUndefined();
 });
 
 it('should list all visitors', () => {
-    expect(queryTests.listAllVisitors).toBeUndefined();
+  expect(queryTests.listAllVisitors).toBeUndefined();
 });
 
 it('should delete a visitor', () => {
-    expect(queryTests.deleteAvisitor).toBeUndefined();
+  expect(queryTests.deleteAvisitor).toBeUndefined();
 });
 
 it('should update a visitor', () => {
-    expect(queryTests.updateAvisitor).toBeUndefined();
+  expect(queryTests.updateAvisitor).toBeUndefined();
 });
 
 it('should return data for a visitor', () => {
-    expect(queryTests.viewOnevisitor).toBeUndefined();
+  expect(queryTests.viewOnevisitor).toBeUndefined();
 });
 
 it('should delete all visitors', () => {
-    expect(queryTests.deleteAllVisitors).toBeUndefined();
+  expect(queryTests.deleteAllVisitors).toBeUndefined();
 });
