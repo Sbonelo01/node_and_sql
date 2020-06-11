@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel="icon" type="image/png" href="image/account.png">
+  <meta charset="UTF-8">
+  <title>Visitor Form</title>
+
+  <style>
+
+    /*
+     *  styling the form
+     */
+    
+/* Bordered form */
+form {
+  border: 5px solid #f1f1f1;
+  padding-right: 20%;
+  padding-left: 20%;
+}
+
+/* Full-width inputs */
+input[type=text], input[type=password], input[type=age], input[type=time], input[type=date] {
+  width: 100%;
+  height: 100%;
+  margin: 8px 0;
+  display: inline-block;
+  border: 1px solid #ccc;
+  box-sizing: border-box;
+}
+
+/* Set a style for all buttons */
+button {
+  background-color: maroon;
+  color: white;
+  padding: 14px 20px;
+  margin: 8px 0;
+  border: none;
+  cursor: pointer;
+  width: 30%;
+}
+
+/* Add a hover effect for buttons */
+button:hover {
+  color: maroon;
+  background-color: white;
+}
+
+/* Add padding to containers */
+.container {
+  align-content: center;
+}
+
+/* Change styles for span and cancel button on extra small screens */
+@media screen and (max-width: 300px) {
+  span.psw {
+    display: block;
+    float: none;
+  }
+  .deleteButton {
+    width: 10%;
+  }
+}
+
+.deleteButton {
+  width: 7%;
+  paddings: 10pxs;
+}
+
+    table {
+      float: left;
+      padding: 0.9em;
+    }
+  }
+}
+    /*
+     *  Styling ajax output
+     */
+
+     body {
+  background: #f5f5f5;
+
+  h2 {
+    text-align: center;
+    font-family: arial;
+    color: #5a5a5a;
+  }
+
+  ul {
+    display: flex;
+    list-style:none;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content:center;
+    flex-basis: 80%;
+
+    li {
+      flex-basis: 20%;
+      display:flex;
+      flex-direction: column;
+      margin-bottom: 20px;
+      align-items:center;
+
+      span {
+        font-family: arial;
+        font-size: 14px;
+        color: #5a5a5a;
+        text-align: center;
+      }
+
+      img {
+        margin: 5px;
+        border-radius: 3px;
+        box-shadow: 1px 1px 3px rgba(0,0,0,0.2); 
+      }
+    }
+  }
+
+}
+
+table {
+  width: 100%;
+  padding-bottom: 10px;
+}
+
+table th, table td {
+  padding: 5px;
+  text-align: center;
+  box-sizing: border-box;
+  border: solid 1px maroon;
+}
+
+table button {
+  cursor: pointer;
+  font-size: 18px;
+  padding: 10px 15px;
+  text-align: center;
+  border-radius: 5px;
+  color: #a82315;
+  border: solid 2px #eb6d60;
+  background-color: #ed7669;
+}
+
+</style>
+</head>
+<body>
+
+  <header>
+    <center><h2 style="color: maroon;">Visitor Form</h2></center>
+  </header>
+
+</body>
+<center>
+ <form action="submit-form" method="post" autocomplete="off">
+
+  <span class="container">
+    <p>visitor name</p>
+    <label for="uname">
+    <input type="text" placeholder="Visitor Name" name="visitorName" required><br/>
+
+    <p>assistant</p>
+    <label for="uname">
+    <input type="text" placeholder="Assisted by" name="assistant" required><br/>
+    
+    <p>age</p>
+    <label for="uname">
+    <input type="age" placeholder="Visitors Age" name="visitorAge" required><br/>
+    
+    <p>date</p>
+    <label for="uname">
+    <input type="date" placeholder="Date of Visit" name="dateOfVisit" required><br/>
+
+    <p>time</p>
+    <label for="uname">
+    <input type="time" placeholder="Time of Visit" name="timeOfVisit" required><br/>
+
+    <p>comments</p>
+    <label for="uname">
+    <input type="text" placeholder="Comments" name="comments" required><br/>
+    </label>
+    <center><button type="submit" id="btn">SUBMIT</button></center>
+  </center>
+
+<center><h3><u>output data</u></h3></center>
+<div class="output">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>ID </th>
+                  <th>visitor name </th>
+                  <th>Assistant </th>
+                  <th>Age </th>
+                  <th>Date </th>
+                  <th>Time </th>
+                  <th>Comments</th>
+                  <th>&nbsp;</th>
+                </tr>
+              </thead>
+              <tbody id="visitors">
+              </tbody>
+            </table>
+        </div>
+  </div>
+
+<script type="text/javascript">
+
+
+const form = document.forms[0];
+
+// Form submit
+form.onsubmit = async e => {
+  e.preventDefault();
+
+  // Form inputs
+  const body = {
+    visitorName: e.target[0].value,
+    assistant: e.target[1].value,
+    visitorAge: e.target[2].value,
+    dateOfVisit: e.target[3].value,
+    timeOfVisit: e.target[4].value,
+    comments: e.target[5].value,
+  }
+
+  // Send request
+  submitForm(body)
+
+  // Clear inputs
+  for(let i = 0; i < e.target.length; i++) {
+    e.target[i].value = "";
+  }
+}
+
+const submitForm = async body => {
+  const response = await fetch('http://127.0.0.1:3000/add-new-visitor', {
+    method: 'post',
+    headers: {'Content-Type': 'application/JSON'},
+    body: JSON.stringify(body)
+  });
+
+  const data = await response.json();
+  createTableRows([data.visitor]);
+
+  return data;
+}
+
+// Create table rows
+const createTableRows = visitors => {
+  const tbody = document.getElementById('visitors');
+
+  for (let i = 0; i < visitors.length; i++) {
+    let row = createTableColumns(visitors[i]);
+
+    // Set attributes
+    row.setAttribute('id', `visitor-${visitors[i].id}`);
+    tbody.prepend(row);
+  }
+}
+
+// Create table columns
+const createTableColumns = visitor => {
+
+  // Create a row
+  let row = document.createElement('tr');
+
+  // Create ID column
+  let tdID = document.createElement('td');
+  tdID.innerHTML = visitor.id;
+  row.appendChild(tdID);
+
+  // Create Name column
+  let tdName = document.createElement('td');
+  tdName.innerHTML = visitor.visitorName;
+  row.appendChild(tdName)
+
+  // Create Assistant column
+  let tdAssistant = document.createElement('td');
+  tdAssistant.innerHTML = visitor.assistant;
+  row.appendChild(tdAssistant);
+
+  // Create Age column
+  let tdAge = document.createElement('td');
+  tdAge.innerHTML = visitor.visitorAge;
+  row.appendChild(tdAge);
+
+  // Create Date column
+  let tdDate = document.createElement('td');
+  tdDate.innerHTML = new Date(visitor.dateOfVisit).toLocaleDateString();
+  row.appendChild(tdDate);
+
+  // Create Time column
+  let tdTime = document.createElement('td');
+  tdTime.innerHTML = visitor.timeOfVisit;
+  row.appendChild(tdTime);
+
+  // Create Comments column
+  let tdComments = document.createElement('td');
+  tdComments.innerHTML = visitor.comments;
+  row.appendChild(tdComments);
+  
+  // Create a delete button
+  const button = createDeleteButton(visitor.id);
+  row.appendChild(button);
+
+  return row;
+}
+
+// Row delete button
+const createDeleteButton = id => {
+  let td = document.createElement('td');
+
+  // Set attributes
+  td.innerHTML = `<button onclick="deleteTableRow(${id})">X</button>`;
+
+  return td;
+}
+
+// Delete table row
+const deleteTableRow = async id => {
+  const tbody = document.getElementById('visitors');
+  const row = document.getElementById(`visitor-${id}`);
+  
+  // Send request
+  const response = await fetch(`http://127.0.0.1:3000/delete-visitor/${id}`, {
+    method: 'delete'
+  });
+
+  const data = await response.json();
+
+  if (data.status == 'ok') {
+    // Remove element
+    tbody.removeChild(row);
+  }
+}
+
+// Initialize table data
+const init = async () => {
+  
+  const response = await fetch('http://127.0.0.1:3000/view-visitors');
+  const data = await response.json();
+
+  createTableRows(data.visitors);
+}
+
+init();
+
+// module.exports = {
+//   init, 
+//   submitForm, 
+//   deleteTableRow
+// }
+
+
+</script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

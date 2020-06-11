@@ -1,146 +1,77 @@
 "use strict"
 
-require('dotenv').config();
-require('../.env');
-
 const {
-    Client
-} = require('pg');
+    addNewVisitor,
+    updateVisitor,
+    deleteVisitor,
+    deleteVisitors,
+    viewVisitors,
+    viewVisitor
+} = require('./app');
 
-    let user = process.env.PGUSER;
-    let password = process.env.PGPASSWORD;
-    let host = process.env.PGHOST;
-    let port = process.env.PGPORT;
-    let database = process.env.PGDATABASE; 
-
-const client = new Client({
-   user,
-   password,
-   host,
-   port,
-   database
+const port = process.env.PORT || 3000;
+const express = require('express');
+const cors = require('cors');
+const {
+    request
+} = require('http');
+const path = require('path');
+const app = express();
+const bodyParser = require('body-parser');
+const urlencodedParser = bodyParser.urlencoded({
+    extended: true
 });
 
- client.connect()
+app.use(cors());
+app.use(bodyParser.json());
+app.use(urlencodedParser);
+app.use('/', express.static('public'));
 
-async function createTable() {
-    try {
-        await client.connect()
-        const table = await client.query(
-            `CREATE TABLE IF NOT EXISTS 
-            visistors(
-                customerID SERIAL primary key,
-                visitorName varchar(50),
-                visitorAge integer,
-                dateOfVisit varchar(50),
-                timeOfVisit varchar(50),
-                assistantName varchar(50),
-                comments varchar(50);
-                `
-        );
-        //console.table(table.rows)
-        return table.rows;
-    } catch (err) {
-        console.table(err)
-    } finally {
-        await client.end()
-    }
-}
 
-async function addNewVisitor(visitorName, visitorAge, dateOfVisit, timeOfVisit, assistantName, comments) {
-    try {
-        await client.connect()
-        const addNew = await client.query(
-            'INSERT INTO visitors(visitorName, visitorAge, dateOfVisit, timeOfVisit, assistantName, comments) VALUES($1, $2, $3, $3, $4, $5, $6)', [visitorName, visitorAge, dateOfVisit, timeOfVisit, assistantName, comments]
-        );
-        //console.table(addNew.rows)
-        return addNew.rows;
-    } catch (err) {
-        console.log(err);
-    } finally {
-        await client.end();
-    }
-}
+app.get('/single-page-app', (request, response) => {
+    return response.status(200).sendFile(__dirname + '/public/index.html')
+})
 
-async function listAllVisitors() {
-    try {
-        await client.connect()
-        const listAll = client.query('SELECT * FROM visitors');
-        //console.table(listAll.rows);
-        return listAll.rows
-    } catch (err) {
-        console.log(err);
-    } finally {
-        await client.end();
-    }
-}
+app.post('/add-new-visitor', async (request, response) => {
+    let visitorName = request.body.visitorName
+    let assistant = request.body.assistant
+    let visitorAge = request.body.visitorAge
+    let dateOfVisit = request.body.dateOfVisit
+    let timeOfVisit = request.body.timeOfVisit
+    let comments = request.body.comments
 
-async function deleteAvisitor(id) {
-    try {
-        await client.connect()
-        const del = client.query('DELETE FROM visitors WHERE visitorId = ${id}');
-        //console.table(del.rows);
-        return del.rows
-    } catch (err) {
-        console.log(err);
-    } finally {
-        await client.end();
-    }
-}
+    const visitor = await addNewVisitor(visitorName, assistant, visitorAge, dateOfVisit, timeOfVisit, comments);
+ 
+    response.status(200).json({
+        status: 'ok',
+        visitor: visitor[0]
+    });
+    //response.end();
+});
 
-async function updateAvisitor(id) {
-    try {
-        await client.connect()
-        const update = client.query('UPDATE FROM visitors WHERE visitorId = ${id}');
-        //console.table(update.rows);
-        return update.rows;
-    } catch (err) {
-        console.log(err)
-    } finally {
-        await client.end();
-    }
-}
+// Delete visitor
+app.delete('/delete-visitor/:id', async (request, response) => {
+    const id = request.params.id;
+    const visitor = await deleteVisitor(id);
+    response.status(200).json({ 
+        status: 'ok',
+        visitor: visitor[0] 
+    });
+});
 
-async function viewOnevisitor(id) {
-    try {
-        await client.connect()
-        const view = client.query('SELECT * FROM visitors visitorID = ${id}')
-            //console.table(view.rows)
-        return view.rows;
-    } catch (err) {
-        console.log(err)
-    } finally {
-        await client.end()
-    }
-}
+// View visitors
+app.get('/view-visitors', async (request, response) => { 
+    const visitors = await viewVisitors();
+    response.status(200).json({ 
+        status: 'ok',
+        visitors: visitors
+    });
+});
 
-async function deleteAllVisitors() {
-    try {
-        await client.connect()
-        const del = client.query('DELETE * FROM visitors')
-            //console.table(del.rows)
-        return del.rows;
-    } catch (err) {
-        console.log(err);
-    } finally {
-        await client.end();
-    }
-}
+const server = app.listen({port}, () => {
+    console.log(`Server is running on port ${port}`)
+});
 
 module.exports = {
-    createTable,
-    addNewVisitor,
-    listAllVisitors,
-    deleteAvisitor,
-    updateAvisitor,
-    viewOnevisitor,
-    deleteAllVisitors
+    server
 }
-
-
-//add new visitor should save the visitor into the database
-//list all visitor. This should return an array of all the visitor names and ids
-//delete a visitor
-//update a visitor
-//view one visitor: given a visitor’s id, return all information about that visitor
-//delete all visitors
